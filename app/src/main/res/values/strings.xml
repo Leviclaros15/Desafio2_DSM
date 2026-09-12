@@ -1,3 +1,45 @@
 <resources>
-    <string name="app_name">DESAFIO2DSM</string>
+    <string name="app_name">Agencia de Viajes - Explorar</string>
+
+    <!-- Login / Registro -->
+    <string name="title_login">Iniciar Sesión</string>
+    <string name="title_register">Registro de Agente</string>
+    <string name="hint_email">Correo electrónico</string>
+    <string name="hint_password">Contraseña</string>
+    <string name="btn_login">Entrar</string>
+    <string name="btn_register">Registrarse</string>
+    <string name="msg_no_account">¿No tienes cuenta? Regístrate</string>
+    <string name="msg_has_account">¿Ya tienes cuenta? Inicia sesión</string>
+
+    <!-- Destinos -->
+    <string name="title_add_destination">Agregar Destino</string>
+    <string name="title_edit_destination">Editar Destino</string>
+    <string name="hint_dest_name">Nombre del destino</string>
+    <string name="hint_country">País</string>
+    <string name="hint_price">Precio ($)</string>
+    <string name="hint_description">Descripción (mín. 20 caracteres)</string>
+    <string name="btn_save">Guardar Destino</string>
+    <string name="btn_select_image">Seleccionar Imagen</string>
+    <string name="btn_delete">Eliminar</string>
+
+    <!-- Validaciones y Errores -->
+    <string name="err_empty_fields">Todos los campos son obligatorios</string>
+    <string name="err_invalid_price">El precio debe ser mayor a 0</string>
+    <string name="err_short_desc">La descripción debe tener al menos 20 caracteres</string>
+    <string name="err_no_image">Debe seleccionar una imagen</string>
+    <string name="err_auth_failed">Error en la autenticación</string>
+    <string name="msg_confirm_delete">¿Estás seguro de eliminar este destino?</string>
+
+    <!-- Países (Spinner) -->
+    <string-array name="countries_array">
+        <item>Seleccione un país</item>
+        <item>El Salvador</item>
+        <item>Guatemala</item>
+        <item>Honduras</item>
+        <item>Costa Rica</item>
+        <item>Panamá</item>
+        <item>México</item>
+        <item>España</item>
+        <item>Japón</item>
+    </string-array>
 </resources>
