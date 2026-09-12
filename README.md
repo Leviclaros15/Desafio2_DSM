@@ -30,8 +30,8 @@ Aplicación móvil desarrollada en Kotlin para la gestión de destinos turístic
 *   **Material Design:** Interfaz de usuario basada en una paleta de colores personalizada.
 
 ## Enlaces
-*   **Video de Defensa:** [URL del video aquí]
-*   **Repositorio GitHub:** [URL del repositorio aquí]
+*   **Video de Defensa:** https://youtu.be/rj1zVuy3P20
+*   **Repositorio GitHub:** https://github.com/Leviclaros15/Desafio2_DSM/edit/main/README.md
 
 ## Estructura de Commits
 Se han seguido las convenciones de commits usando verbos en español/inglés:
