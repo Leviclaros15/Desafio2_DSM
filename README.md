@@ -39,6 +39,3 @@ Se han seguido las convenciones de commits usando verbos en español/inglés:
 *   `fix`: Corregir errores.
 *   `update`: Actualizar configuraciones o dependencias.
 *   `implement`: Implementar lógica de negocio.
-
----
-*Nota: Asegúrate de agregar el archivo `google-services.json` en la carpeta `app/` para que la integración con Firebase funcione correctamente.*
