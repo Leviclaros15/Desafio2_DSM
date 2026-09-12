@@ -2,6 +2,7 @@ package com.example.desafio2dsm
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -70,8 +71,8 @@ class MainActivity : AppCompatActivity() {
             .addOnSuccessListener {
                 Toast.makeText(this, "Destino eliminado", Toast.LENGTH_SHORT).show()
             }
-            .addOnFailureListener {
-                Toast.makeText(this, "Error al eliminar", Toast.LENGTH_SHORT).show()
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Error al eliminar: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -89,15 +90,18 @@ class MainActivity : AppCompatActivity() {
         firestoreListener = db.collection("destinos")
             .addSnapshotListener { snapshots, e ->
                 if (e != null) {
-                    Toast.makeText(this, "Error al cargar datos", Toast.LENGTH_SHORT).show()
+                    Log.e("FIRESTORE_ERROR", "Error al cargar destinos", e)
+                    Toast.makeText(this, "Error Firestore: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                     return@addSnapshotListener
                 }
 
                 val list = mutableListOf<Destino>()
-                for (doc in snapshots!!) {
-                    val destino = doc.toObject(Destino::class.java)
-                    destino.id = doc.id
-                    list.add(destino)
+                if (snapshots != null) {
+                    for (doc in snapshots) {
+                        val destino = doc.toObject(Destino::class.java)
+                        destino.id = doc.id
+                        list.add(destino)
+                    }
                 }
                 adapter.updateList(list)
             }

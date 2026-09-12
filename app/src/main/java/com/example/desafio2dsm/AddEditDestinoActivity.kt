@@ -14,18 +14,19 @@ import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.example.desafio2dsm.databinding.ActivityAddEditDestinoBinding
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import java.io.ByteArrayOutputStream
 import java.io.Serializable
-import java.util.UUID
+import java.util.Base64
 
 class AddEditDestinoActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAddEditDestinoBinding
     private lateinit var db: FirebaseFirestore
-    private lateinit var storage: FirebaseStorage
     private var imageUri: Uri? = null
     private var destinoId: String? = null
-    private var existingImageUrl: String? = null
+    private var existingImageData: String? = null
 
     private val selectImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -40,16 +41,13 @@ class AddEditDestinoActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         db = FirebaseFirestore.getInstance()
-        
-        // Inicialización automática desde google-services.json
-        storage = FirebaseStorage.getInstance()
 
         setupSpinner()
 
         val destino = getSerializable(intent, "destino", Destino::class.java)
         if (destino != null) {
             destinoId = destino.id
-            existingImageUrl = destino.imageUrl
+            existingImageData = destino.imageData
             binding.tvTitle.text = getString(R.string.title_edit_destination)
             binding.etNombre.setText(destino.nombre)
             binding.etPrecio.setText(destino.precio.toString())
@@ -61,7 +59,13 @@ class AddEditDestinoActivity : AppCompatActivity() {
                 binding.spPais.setSelection(position)
             }
             
-            Glide.with(this).load(destino.imageUrl).into(binding.ivSelected)
+            // Cargar imagen desde Base64
+            if (destino.imageData.isNotEmpty()) {
+                val bitmap = decodeBase64ToBitmap(destino.imageData)
+                if (bitmap != null) {
+                    binding.ivSelected.setImageBitmap(bitmap)
+                }
+            }
         }
 
         binding.btnSelectImage.setOnClickListener {
@@ -122,42 +126,76 @@ class AddEditDestinoActivity : AppCompatActivity() {
 
         binding.btnSave.isEnabled = false
 
+        Log.d("SAVE_DESTINO", "destinoId: $destinoId, imageUri: $imageUri, existingImageData: $existingImageData")
+
         if (imageUri != null) {
-            uploadImage(nombre, pais, precio, descripcion)
+            val base64String = convertImageToBase64(imageUri!!)
+            if (base64String != null) {
+                updateFirestore(nombre, pais, precio, descripcion, base64String)
+            } else {
+                Toast.makeText(this, "Error al procesar la imagen", Toast.LENGTH_SHORT).show()
+                binding.btnSave.isEnabled = true
+            }
         } else {
-            updateFirestore(nombre, pais, precio, descripcion, existingImageUrl ?: "")
+            if (destinoId != null && (existingImageData == null || existingImageData!!.isEmpty())) {
+                Toast.makeText(this, "Error: La imagen original no existe. Por favor selecciona una nueva imagen.", Toast.LENGTH_LONG).show()
+                binding.btnSave.isEnabled = true
+                return
+            }
+            updateFirestore(nombre, pais, precio, descripcion, existingImageData ?: "")
         }
     }
 
-    private fun uploadImage(nombre: String, pais: String, precio: Double, descripcion: String) {
-        val fileName = UUID.randomUUID().toString() + ".jpg"
-        // Aseguramos la ruta correcta: /destinos/archivo.jpg
-        val ref = storage.reference.child("destinos").child(fileName)
-
-        imageUri?.let { uri ->
-            ref.putFile(uri)
-                .addOnSuccessListener {
-                    ref.downloadUrl.addOnSuccessListener { downloadUri ->
-                        updateFirestore(nombre, pais, precio, descripcion, downloadUri.toString())
-                    }
-                }
-                .addOnFailureListener { e ->
-                    Log.e("STORAGE_ERROR", "Error: ${e.message}", e)
-                    Toast.makeText(this, "Error Storage: ${e.message}. Verifique si Storage está habilitado en la consola.", Toast.LENGTH_LONG).show()
-                    binding.btnSave.isEnabled = true
-                }
-        } ?: run {
-            binding.btnSave.isEnabled = true
+    private fun convertImageToBase64(uri: Uri): String? {
+        return try {
+            val inputStream = contentResolver.openInputStream(uri)
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream?.close()
+            
+            // Reducir tamaño para no exceder límite de Firestore (1MB)
+            val maxSize = 500 // px
+            val width = bitmap.width
+            val height = bitmap.height
+            
+            val scale = if (width > height) {
+                maxSize.toFloat() / width
+            } else {
+                maxSize.toFloat() / height
+            }
+            
+            val scaledWidth = (width * scale).toInt()
+            val scaledHeight = (height * scale).toInt()
+            
+            val scaledBitmap = Bitmap.createScaledBitmap(bitmap, scaledWidth, scaledHeight, true)
+            
+            val byteArrayOutputStream = ByteArrayOutputStream()
+            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 70, byteArrayOutputStream)
+            val byteArray = byteArrayOutputStream.toByteArray()
+            
+            Base64.getEncoder().encodeToString(byteArray)
+        } catch (e: Exception) {
+            Log.e("BASE64", "Error convirtiendo imagen: ${e.message}", e)
+            null
+        }
+    }
+    
+    private fun decodeBase64ToBitmap(base64String: String): Bitmap? {
+        return try {
+            val byteArray = Base64.getDecoder().decode(base64String)
+            BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+        } catch (e: Exception) {
+            Log.e("BASE64", "Error decodificando imagen: ${e.message}", e)
+            null
         }
     }
 
-    private fun updateFirestore(nombre: String, pais: String, precio: Double, descripcion: String, imageUrl: String) {
+    private fun updateFirestore(nombre: String, pais: String, precio: Double, descripcion: String, imageData: String) {
         val destinoData = hashMapOf(
             "nombre" to nombre,
             "pais" to pais,
             "precio" to precio,
             "descripcion" to descripcion,
-            "imageUrl" to imageUrl
+            "imageData" to imageData
         )
 
         val collection = db.collection("destinos")
@@ -168,7 +206,7 @@ class AddEditDestinoActivity : AppCompatActivity() {
         }
 
         task.addOnSuccessListener {
-            Toast.makeText(this, "Destino guardado correctamente", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Destino guardado con éxito", Toast.LENGTH_SHORT).show()
             finish()
         }.addOnFailureListener { e ->
             Toast.makeText(this, "Error Firestore: ${e.message}", Toast.LENGTH_LONG).show()

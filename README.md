@@ -3,8 +3,8 @@
 Aplicación móvil desarrollada en Kotlin para la gestión de destinos turísticos, integrando autenticación y servicios de base de datos con Firebase.
 
 ## Información del Alumno
-* **Nombre:** [Tu Nombre Aquí]
-* **Código:** [Tu Código de Alumno Aquí]
+* **Nombre:** Gerson Levi Claros Fuentes
+* **Código:** CF250963
 
 ## Funcionalidades
 1.  **Autenticación:**
@@ -25,9 +25,8 @@ Aplicación móvil desarrollada en Kotlin para la gestión de destinos turístic
 ## Tecnologías Utilizadas
 *   **Android Studio** & **Kotlin**
 *   **Firebase Auth:** Autenticación de usuarios.
-*   **Firebase Firestore:** Almacenamiento de datos NoSQL.
-*   **Firebase Storage:** Almacenamiento de imágenes.
-*   **Glide:** Carga y gestión de imágenes.
+*   **Firebase Firestore:** Almacenamiento de datos NoSQL (incluye imágenes en formato Base64).
+*   **Base64:** Codificación de imágenes para almacenamiento directo en Firestore.
 *   **Material Design:** Interfaz de usuario basada en una paleta de colores personalizada.
 
 ## Enlaces

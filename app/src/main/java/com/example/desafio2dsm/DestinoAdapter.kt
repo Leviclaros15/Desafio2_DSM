@@ -1,10 +1,12 @@
 package com.example.desafio2dsm
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.example.desafio2dsm.databinding.ItemDestinoBinding
+import java.util.Base64
 
 class DestinoAdapter(
     private var destinos: List<Destino>,
@@ -27,13 +29,29 @@ class DestinoAdapter(
             tvPrecio.text = "$${destino.precio}"
             tvDescripcion.text = destino.descripcion
 
-            Glide.with(ivDestino.context)
-                .load(destino.imageUrl)
-                .placeholder(android.R.drawable.ic_menu_gallery)
-                .into(ivDestino)
+            // Cargar imagen desde Base64
+            if (destino.imageData.isNotEmpty()) {
+                val bitmap = decodeBase64ToBitmap(destino.imageData)
+                if (bitmap != null) {
+                    ivDestino.setImageBitmap(bitmap)
+                } else {
+                    ivDestino.setImageResource(android.R.drawable.ic_menu_gallery)
+                }
+            } else {
+                ivDestino.setImageResource(android.R.drawable.ic_menu_gallery)
+            }
 
             btnEdit.setOnClickListener { onEditClick(destino) }
             btnDelete.setOnClickListener { onDeleteClick(destino) }
+        }
+    }
+
+    private fun decodeBase64ToBitmap(base64String: String): Bitmap? {
+        return try {
+            val byteArray = Base64.getDecoder().decode(base64String)
+            BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+        } catch (e: Exception) {
+            null
         }
     }
 

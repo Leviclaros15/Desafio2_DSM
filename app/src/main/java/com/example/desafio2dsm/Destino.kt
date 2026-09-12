@@ -8,5 +8,5 @@ data class Destino(
     val pais: String = "",
     val precio: Double = 0.0,
     val descripcion: String = "",
-    val imageUrl: String = ""
+    val imageData: String = ""
 ) : Serializable
