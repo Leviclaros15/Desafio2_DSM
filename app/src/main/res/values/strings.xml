@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Agencia de Viajes - Explorar</string>
+    <string name="app_name">Agencia de Viajes</string>
 
     <!-- Login / Registro -->
     <string name="title_login">Iniciar Sesión</string>
