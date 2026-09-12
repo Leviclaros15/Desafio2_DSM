@@ -12,7 +12,7 @@ constraintlayout = "2.2.0"
 googleGmsGoogleServices = "4.4.2"
 firebaseAuth = "23.1.0"
 firebaseFirestore = "25.1.1"
-firebaseStorage = "21.0.1"
+firebaseStorage = "22.0.2"
 glide = "4.16.0"
 
 [libraries]

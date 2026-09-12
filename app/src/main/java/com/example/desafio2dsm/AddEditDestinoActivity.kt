@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -39,6 +40,8 @@ class AddEditDestinoActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         db = FirebaseFirestore.getInstance()
+        
+        // Inicialización automática desde google-services.json
         storage = FirebaseStorage.getInstance()
 
         setupSpinner()
@@ -127,19 +130,25 @@ class AddEditDestinoActivity : AppCompatActivity() {
     }
 
     private fun uploadImage(nombre: String, pais: String, precio: Double, descripcion: String) {
-        val fileName = UUID.randomUUID().toString()
-        val ref = storage.reference.child("destinos/$fileName")
+        val fileName = UUID.randomUUID().toString() + ".jpg"
+        // Aseguramos la ruta correcta: /destinos/archivo.jpg
+        val ref = storage.reference.child("destinos").child(fileName)
 
-        ref.putFile(imageUri!!)
-            .addOnSuccessListener {
-                ref.downloadUrl.addOnSuccessListener { uri ->
-                    updateFirestore(nombre, pais, precio, descripcion, uri.toString())
+        imageUri?.let { uri ->
+            ref.putFile(uri)
+                .addOnSuccessListener {
+                    ref.downloadUrl.addOnSuccessListener { downloadUri ->
+                        updateFirestore(nombre, pais, precio, descripcion, downloadUri.toString())
+                    }
                 }
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "Error al subir imagen", Toast.LENGTH_SHORT).show()
-                binding.btnSave.isEnabled = true
-            }
+                .addOnFailureListener { e ->
+                    Log.e("STORAGE_ERROR", "Error: ${e.message}", e)
+                    Toast.makeText(this, "Error Storage: ${e.message}. Verifique si Storage está habilitado en la consola.", Toast.LENGTH_LONG).show()
+                    binding.btnSave.isEnabled = true
+                }
+        } ?: run {
+            binding.btnSave.isEnabled = true
+        }
     }
 
     private fun updateFirestore(nombre: String, pais: String, precio: Double, descripcion: String, imageUrl: String) {
@@ -159,10 +168,10 @@ class AddEditDestinoActivity : AppCompatActivity() {
         }
 
         task.addOnSuccessListener {
-            Toast.makeText(this, "Destino guardado", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Destino guardado correctamente", Toast.LENGTH_SHORT).show()
             finish()
-        }.addOnFailureListener {
-            Toast.makeText(this, "Error al guardar en base de datos", Toast.LENGTH_SHORT).show()
+        }.addOnFailureListener { e ->
+            Toast.makeText(this, "Error Firestore: ${e.message}", Toast.LENGTH_LONG).show()
             binding.btnSave.isEnabled = true
         }
     }
